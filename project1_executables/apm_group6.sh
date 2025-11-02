@@ -124,10 +124,18 @@ watch_iostat
 echo "Collecting data for $TIME seconds..."
 END=$((START + TIME))
 
-while [ $(date +%s) -lt $END ]; do
+# Fixed timestamps. Variable t recieving timestamp from STEP and
+# Collecting data on each planned second (5 10 15 20).
+for ((t = STEP; t <= TIME; t += STEP)); do
+  target=$((START + t))
+  
+  while [ $(date +%s) -lt $target ]; do
+    sleep 0.2
+  done
+  
+  sec=$((t))
   proc_metrics
   sys_metrics
-  sleep $STEP
 done
 
 echo "Done!"
