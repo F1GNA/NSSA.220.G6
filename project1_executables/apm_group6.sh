@@ -82,6 +82,21 @@ watch_ifstat() {
   IF_PID=$!
 }
 
+watch_iostat() {
+  iostat -x -k -d 1 | awk -v d="$DISK" '
+    BEGIN { skip=1 }
+    /^Device:/ { next }
+    $1 == d {
+      if (skip) { skip=0; next }
+      # Колонка 9 = wkB/s (скорость записи на диск)
+      if ($9 == "") next
+      print $9; fflush();
+    }
+  ' > $TMP_IO &
+  IO_PID=$!
+}
+
+
 
 
 # ---------- collect process metrics ----------
