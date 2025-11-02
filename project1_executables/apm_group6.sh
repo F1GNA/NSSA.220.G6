@@ -70,14 +70,22 @@ start_apps() {
 
 # ---------- background monitors ----------
 watch_ifstat() {
-  ifstat $NET 1 | awk '/^[0-9]/ {print $1","$2; fflush();}' > $TMP_IF &
+  ifstat -n -t $NET 1 | awk '/^[[:space:]]*[0-9]/ {
+      gsub(/^[[:space:]]+/, "", $0);
+      print $1","$2;
+      fflush();
+  }' > $TMP_IF &
   IF_PID=$!
 }
 
 watch_iostat() {
   iostat -dk 1 $DISK | awk -v d=$DISK '
+    BEGIN {skip=1}
     /^Device:/ {next}
-    $1==d {print $4; fflush();}' > $TMP_IO &
+    $1==d {
+      if (skip) {skip=0; next}
+      print $4; fflush();
+    }' > $TMP_IO &
   IO_PID=$!
 }
 
