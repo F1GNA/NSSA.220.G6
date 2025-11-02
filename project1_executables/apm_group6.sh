@@ -85,14 +85,18 @@ watch_ifstat() {
   if ifstat -n 1 1 >/dev/null 2>&1; then
   # This line runs ifstat every 1 second on the $NET interface. The output from this is piped to awk.
   # The awk command finds the line for the correct interface and prints the 2nd and 3rd columns, separated by a comma. fflush() ensures that the data is written to the file immediately. 
+  # The output from awk is redirected to the temporary file $TMP_IF, and the whole command runs in the background.
+  # Runs an else block if the ifstat command fails.
     ifstat -n 1 $NET | awk -v iface="$NET" '
       $1 == iface { print $2 "," $3; fflush(); }
     ' > $TMP_IF &
   else
+  # This is a fallback of sorts. It uses sar, which is a different monitoring tool, to get the same data. The awk logic is just for sar's different output format.
     sar -n DEV 1 | awk -v iface="$NET" '
       $2 == iface { print $5 "," $6; fflush(); }
     ' > $TMP_IF &
   fi
+  # Stores the PID of the ifstat or sar background processes so it can be killed by the cleanup() function.
   IF_PID=$!
 }
 
