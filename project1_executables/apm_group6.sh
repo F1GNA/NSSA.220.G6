@@ -77,12 +77,12 @@ watch_ifstat() {
 }
 
 watch_iostat() {
-  iostat -dkx 1 $DISK | awk -v d=$DISK '
-    BEGIN { skip = 1 }
+  iostat -x -k -d 1 | awk -v d="$DISK" '
+    BEGIN { skip=1 }
     /^Device:/ { next }
     $1 == d {
-      if (skip) { skip = 0; next }
-      print $10; fflush();
+      if (skip) { skip=0; next }
+      print $8; fflush();
     }
   ' > $TMP_IO &
   IO_PID=$!
