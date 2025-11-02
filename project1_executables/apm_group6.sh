@@ -2,27 +2,46 @@
 # APM Project 1 Group 6
 
 # ---------- config ----------
+# User defined ip address for ifstat network measuring tool
 IP=$1
+
+# User defined number of seconds the test should run for (default: 900s)
 TIME=${2:-900} 
+
+# Network interface to measure
 NET=ens33
+
+# Hard dis to measure
 DISK=sda
+
+# Number of seconds between each measurment
 STEP=5
 
+# If no ip address if given, exit the program, and print a message defining the correct program usage format
 if [ -z "$IP" ]; then
   echo "Usage: $0 <IP_address>"
   exit 1
 fi
 
+# List of apps to measure
 APPS=(./APM1 ./APM2 ./APM3 ./APM4 ./APM5 ./APM6)
+
+# Starting time, in seconds
 START=$(date +%s)
 
+# Temporary files for ifstat and iostat output
 TMP_IF=ifstat.tmp
 TMP_IO=iostat.tmp
+
+# Filename to save collective data to
 SAVE_FILE=system_metrics.csv
 
+# List of app process IDs
 PIDS=()
 
 # ---------- cleanup ----------
+# Stops all related processes (app processes and temporary file writing processes),
+# Deletes temporary files
 cleanup() {
   echo "Stopping everything..."
   kill $IF_PID $IO_PID 2>/dev/null
