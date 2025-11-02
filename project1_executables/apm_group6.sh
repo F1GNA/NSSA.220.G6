@@ -100,7 +100,15 @@ watch_ifstat() {
   IF_PID=$!
 }
 
+# This defines the watch_iostat() function that is for disk monitoring
 watch_iostat() {
+# Runs iostat in extended mode (-x), for devices (-d), every 1 second (1). The output is piped to awk. 
+# awk stuff:
+  # Before starting, sets a skip flag to 1
+  # Skips any header lines
+  # Once it finds a line for the correct disk, we use an if block
+  # If the skip flag is 1, we set it to 0, skip the first line. This is to ignore iostat's first output and not the current data
+  # The print line prints the 9th column (disk writes in kB/s) and flushes the output.
   iostat -x -k -d 1 | awk -v d="$DISK" '
     BEGIN { skip=1 }
     /^Device:/ { next }
@@ -110,6 +118,8 @@ watch_iostat() {
       print $9; fflush();
     }
   ' > $TMP_IO &
+  # Line above redirects the output to the disk temp file and runs in the background
+  # Line below stores the PID of the process for the cleanup() function. 
   IO_PID=$!
 }
 
