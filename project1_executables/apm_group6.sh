@@ -70,23 +70,18 @@ start_apps() {
 
 # ---------- background monitors ----------
 watch_ifstat() {
-  ifstat -n 1 $NET | awk -v iface="$NET" '
-    $1 == iface { print $2 "," $3; fflush(); }
-  ' > $TMP_IF &
+  if ifstat -n 1 1 >/dev/null 2>&1; then
+    ifstat -n 1 $NET | awk -v iface="$NET" '
+      $1 == iface { print $2 "," $3; fflush(); }
+    ' > $TMP_IF &
+  else
+    sar -n DEV 1 | awk -v iface="$NET" '
+      $2 == iface { print $5 "," $6; fflush(); }
+    ' > $TMP_IF &
+  fi
   IF_PID=$!
 }
 
-watch_iostat() {
-  iostat -x -k -d 1 | awk -v d="$DISK" '
-    BEGIN { skip=1 }
-    /^Device:/ { next }
-    $1 == d {
-      if (skip) { skip=0; next }
-      print $8; fflush();
-    }
-  ' > $TMP_IO &
-  IO_PID=$!
-}
 
 
 # ---------- collect process metrics ----------
