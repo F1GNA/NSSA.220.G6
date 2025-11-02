@@ -56,15 +56,22 @@ trap cleanup EXIT
 # Starts all of the applications that will be monitored.
 # Defines the start_apps() function.
 start_apps() {
-# Loops through each app in the APPS array
+# Loops through each application path in the APPS array
   for app in "${APPS[@]}"; do
+  # Checks here if the file is executable.
     if [ -x "$app" ]; then
+    # If the file is executable, it runs the app, passes it as the $IP variable, and uses & to run it in the background.
       $app "$IP" &
+      # The $! here gets the PID of the most recent background command
       pid=$!
+      # Adds the new PUD to our PIDS array
       PIDS+=($pid)
+      # Gets the filename from the path. For example, APM1 comes from ./APM1
       name=$(basename "$app")
       echo "Started $name (PID $pid)"
+      # This is to create an empty file with the specified name
       > "${name}_metrics.csv"
+      # Otherwise, the program should declare that it can't run that specific app and move on to the next app to check if it's runnable. 
     else
       echo "Can't run $app"
     fi
