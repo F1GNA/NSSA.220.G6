@@ -143,30 +143,43 @@ proc_metrics() {
     pid=${PIDS[$i]}
     # This gets the app name from the APPS array at the same index
     name=$(basename "${APPS[$i]}")
+    # This checks if the process with that PID is still running
     if ps -p $pid > /dev/null 2>&1; then
+    # If it is still running, this runs ps formatted to show only %CPU and %Memory with no headers
       vals=$(ps -p $pid -o %cpu=,%mem=)
+      # This appends the elapsed time and the CPU/Memory values to that app's specific CSV file
       echo "$sec,$vals" >> "${name}_metrics.csv"
+      # Else block here for if the process is dead
     else
+    # If the process is dead, this appends a 0,0 entry to show the process stopped
       echo "$sec,0,0" >> "${name}_metrics.csv"
     fi
   done
 }
 
 # ---------- collect system metrics ----------
+# This defines the function to get system-wide metrics
 sys_metrics() {
+# These two lines calculate the elapsed time
   now=$(date +%s)
   sec=$((now - START))
+  # This checks if the network temp file is not empty (-s)
   if [ -s "$TMP_IF" ]; then
+  # If it has data, it gets the last line (which is the most recent value)
     line=$(tail -n1 $TMP_IF)
+    # If the file is empty, then it uses 0,0 as the default.
   else
     line="0,0"
   fi
+  # This does the same check for the disk temp file
   if [ -s "$TMP_IO" ]; then
     io=$(tail -n1 $TMP_IO)
   else
     io="0"
   fi
+  # This runs df -m / (or disk free space in MB) and uses awk to grab the 4th column from the 2nd line (NR==2), which is the available space.
   free=$(df -m / | awk 'NR==2{print $4}')
+  # This appends all the collected data (time, network, disk, free space) as a new line in the main system_metrics.csv file.
   echo "$sec,$line,$io,$free" >> $SAVE_FILE
 }
 
