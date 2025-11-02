@@ -70,13 +70,16 @@ start_apps() {
 
 # ---------- background monitors ----------
 watch_ifstat() {
-  ifstat -n -t $NET 1 | awk '/^[[:space:]]*[0-9]/ {
+  ifstat -n -t 1 $NET | awk '/^[[:space:]]*[0-9]/ {
       gsub(/^[[:space:]]+/, "", $0);
-      print $1","$2;
+      # ifstat с -t добавляет время в первом поле, поэтому берем последние два столбца
+      n = NF
+      print $(n-1)","$n;
       fflush();
   }' > $TMP_IF &
   IF_PID=$!
 }
+
 
 watch_iostat() {
   iostat -dk 1 $DISK | awk -v d=$DISK '
