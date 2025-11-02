@@ -83,24 +83,20 @@ start_apps() {
 
 # This creates the watch_ifstat() network monitoring function
 watch_ifstat() {
-# Code tries to run ifstat and if the command succeeds, then it means that ifstat is installed, and the then block runs.
-  if ifstat -n 1 1 >/dev/null 2>&1; then
-  # This line runs ifstat every 1 second on the $NET interface. The output from this is piped to awk.
-  # The awk command finds the line for the correct interface and prints the 2nd and 3rd columns, separated by a comma. fflush() ensures that the data is written to the file immediately. 
-  # The output from awk is redirected to the temporary file $TMP_IF, and the whole command runs in the background.
-  # Runs an else block if the ifstat command fails.
-    ifstat -n 1 $NET | awk -v iface="$NET" '
-      $1 == iface { print $2 "," $3; fflush(); }
-    ' > $TMP_IF &
-  else
-  # This is a fallback of sorts. It uses sar, which is a different monitoring tool, to get the same data. The awk logic is just for sar's different output format.
-    sar -n DEV 1 | awk -v iface="$NET" '
-      $2 == iface { print $5 "," $6; fflush(); }
-    ' > $TMP_IF &
-  fi
-  # Stores the PID of the ifstat or sar background processes so it can be killed by the cleanup() function.
+  while true; do
+    ifstat -i $NET | awk -v iface="$NET" '
+      $1 == iface {
+        rx=$2; tx=$3;
+        if (rx ~ /^[0-9.]+$/ && tx ~ /^[0-9.]+$/) {
+          print rx "," tx; fflush();
+        }
+      }
+    ' >> $TMP_IF
+    sleep 1
+  done &
   IF_PID=$!
 }
+
 
 # This defines the watch_iostat() function that is for disk monitoring
 watch_iostat() {
