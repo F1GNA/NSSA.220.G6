@@ -184,11 +184,17 @@ sys_metrics() {
 }
 
 # ---------- main ----------
+# This is the main.
+# This controls the timing
+
+# This empties the main system_metrics.csv file before starting
 > $SAVE_FILE
+# These three lines below this comment call the functions to start everything:
 start_apps
 watch_ifstat
 watch_iostat
 
+# This prints a status message
 echo "Collecting data for $TIME seconds..."
 END=$((START + TIME))
 
@@ -196,12 +202,16 @@ END=$((START + TIME))
 # Collecting data on each planned second (5 10 15 20).
 for ((t = STEP; t <= TIME; t += STEP)); do
   target=$((START + t))
-  
+
+  # This loop constantly checks the current time:
   while [ $(date +%s) -lt $target ]; do
+  # Sleeps for a very short time (of 200ms) to avoid maxing out the CPU, then it checks the time again
     sleep 0.2
+    # The while loop only exits when the current time ($(date +%s)) is finally equal to or greater than the target time. This ensures the collection happens at the 5-second mark, not 5 seconds after the last collection finished
   done
   
   sec=$((t))
+  # This calls the collection functions to log the data
   proc_metrics
   sys_metrics
 done
