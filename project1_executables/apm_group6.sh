@@ -192,7 +192,7 @@ watch_iostat
 echo "Collecting data for $TIME seconds..."
 END=$((START + TIME))
 
-# Fixed timestamps. Variable t recieving timestamp from STEP and
+# Fixed timestamps. Variable t receiving timestamp from STEP and
 # Collecting data on each planned second (5 10 15 20).
 for ((t = STEP; t <= TIME; t += STEP)); do
   target=$((START + t))
