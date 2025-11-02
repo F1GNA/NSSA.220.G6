@@ -79,6 +79,8 @@ start_apps() {
 }
 
 # ---------- background monitors ----------
+# These functions start the long-running system monitors:
+
 # This creates the watch_ifstat() network monitoring function
 watch_ifstat() {
 # Code tries to run ifstat and if the command succeeds, then it means that ifstat is installed, and the then block runs.
@@ -127,11 +129,19 @@ watch_iostat() {
 
 
 # ---------- collect process metrics ----------
+# These functions are called inside the main loop to grab the data:
+
+# This defines the function to get per-process metrics
 proc_metrics() {
+# This gets the exact current time
   now=$(date +%s)
+  # This calculates the elapsed time in seconds
   sec=$((now - START))
+  # This for loop here loops through the indices (0, 1, 2, etc.) of the PIDS array
   for i in "${!PIDS[@]}"; do
+  # This gets the PID at the current index
     pid=${PIDS[$i]}
+    # This gets the app name from the APPS array at the same index
     name=$(basename "${APPS[$i]}")
     if ps -p $pid > /dev/null 2>&1; then
       vals=$(ps -p $pid -o %cpu=,%mem=)
