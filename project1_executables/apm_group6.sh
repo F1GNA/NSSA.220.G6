@@ -88,7 +88,6 @@ watch_iostat() {
     /^Device:/ { next }
     $1 == d {
       if (skip) { skip=0; next }
-      # Колонка 9 = wkB/s (скорость записи на диск)
       if ($9 == "") next
       print $9; fflush();
     }
