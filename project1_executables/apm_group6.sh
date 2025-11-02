@@ -53,7 +53,10 @@ cleanup() {
 trap cleanup EXIT
 
 # ---------- start apps ----------
+# Starts all of the applications that will be monitored.
+# Defines the start_apps() function.
 start_apps() {
+# Loops through each app in the APPS array
   for app in "${APPS[@]}"; do
     if [ -x "$app" ]; then
       $app "$IP" &
