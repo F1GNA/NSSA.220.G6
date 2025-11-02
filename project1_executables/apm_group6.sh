@@ -79,8 +79,12 @@ start_apps() {
 }
 
 # ---------- background monitors ----------
+# This creates the watch_ifstat() network monitoring function
 watch_ifstat() {
+# Code tries to run ifstat and if the command succeeds, then it means that ifstat is installed, and the then block runs.
   if ifstat -n 1 1 >/dev/null 2>&1; then
+  # This line runs ifstat every 1 second on the $NET interface. The output from this is piped to awk.
+  # The awk command finds the line for the correct interface and prints the 2nd and 3rd columns, separated by a comma. fflush() ensures that the data is written to the file immediately. 
     ifstat -n 1 $NET | awk -v iface="$NET" '
       $1 == iface { print $2 "," $3; fflush(); }
     ' > $TMP_IF &
