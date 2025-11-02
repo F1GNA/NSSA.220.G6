@@ -72,7 +72,6 @@ start_apps() {
 watch_ifstat() {
   ifstat -n -t 1 $NET | awk '/^[[:space:]]*[0-9]/ {
       gsub(/^[[:space:]]+/, "", $0);
-      # ifstat с -t добавляет время в первом поле, поэтому берем последние два столбца
       n = NF
       print $(n-1)","$n;
       fflush();
