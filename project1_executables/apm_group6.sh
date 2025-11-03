@@ -84,9 +84,9 @@ start_apps() {
 # This creates the watch_ifstat() network monitoring function
 watch_ifstat() {
   while true; do
-    ifstat -i $NET | awk -v iface="$NET" '
+    ifstat | awk -v iface="$NET" '
       $1 == iface {
-        rx=$2; tx=$3;
+        rx=$6; tx=$8;
         if (rx ~ /^[0-9.]+$/ && tx ~ /^[0-9.]+$/) {
           print rx "," tx; fflush();
         }
@@ -96,7 +96,6 @@ watch_ifstat() {
   done &
   IF_PID=$!
 }
-
 
 # This defines the watch_iostat() function that is for disk monitoring
 watch_iostat() {
