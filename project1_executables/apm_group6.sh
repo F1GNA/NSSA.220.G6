@@ -9,7 +9,7 @@ IP=$1
 TIME=${2:-900} 
 
 # Network interface to measure
-NET=ens33
+NET=ens192
 
 # Hard dis to measure
 DISK=sda
