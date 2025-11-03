@@ -79,20 +79,35 @@ start_apps() {
 }
 
 # ---------- background monitors ----------
+
+# This defines the watch_ifstat() function that monitors network activity
 watch_ifstat() {
+  # Runs in an infinite loop to collect data every second
   while true; do
+    # Runs ifstat to get live network statistics
+    # Sends the output to awk for processing
     ifstat | awk -v iface="$NET" '
+      # Checks each line; if the first column matches our interface name (e.g. ens192)
       $1 == iface {
+      # RX (receive) data rate is in column 6, TX (transmit) in column 8
         rx=$6; tx=$8;
+      # If both values are valid numbers (not headers or empty)
         if (rx ~ /^[0-9.]+$/ && tx ~ /^[0-9.]+$/) {
+      # Print RX and TX values separated by a comma (for CSV)
+      # fflush() ensures the line is immediately written to file
           print rx "," tx; fflush();
         }
       }
-    ' >> "$TMP_IF"
+    ' >> "$TMP_IF"   # Appends the result to the temporary ifstat file (ifstat.tmp)
+    
+    # Wait 1 second before the next measurement
     sleep 1
   done &
+  
+  # Stores the background process ID so it can be stopped later
   IF_PID=$!
 }
+
 
 
 
