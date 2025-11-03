@@ -79,34 +79,21 @@ start_apps() {
 }
 
 # ---------- background monitors ----------
-# These functions start the long-running system monitors:
-
-# This creates the watch_ifstat() network monitoring function
 watch_ifstat() {
-  echo "[DEBUG] Starting ifstat monitor on interface: $NET"
   while true; do
-    output=$(ifstat 2>&1)
-    echo "[DEBUG] Raw ifstat output:" >> debug_ifstat.log
-    echo "$output" >> debug_ifstat.log
-
-    echo "$output" | awk -v iface="$NET" '
+    ifstat | awk -v iface="$NET" '
       $1 == iface {
         rx=$6; tx=$8;
         if (rx ~ /^[0-9.]+$/ && tx ~ /^[0-9.]+$/) {
           print rx "," tx; fflush();
         }
       }
-    ' >> $TMP_IF
-
-    if [ ! -s "$TMP_IF" ]; then
-      echo "[WARN] No data written for interface $NET at $(date)" >> debug_ifstat.log
-    fi
-
+    ' >> "$TMP_IF"
     sleep 1
   done &
   IF_PID=$!
-  echo "[DEBUG] watch_ifstat PID=$IF_PID started" >> debug_ifstat.log
 }
+
 
 
 # This defines the watch_iostat() function that is for disk monitoring
